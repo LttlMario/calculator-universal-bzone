@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Familia Es Todo - Calculator Universal Arme & Muniție</title>
+    <style>
+        :root {
+            --bg-main: #0f172a;
+            --bg-panel: #1e293b;
+            --bg-input: #0f172a;
+            --border-color: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --success: #22c55e;
+            --warning: #ffd700;
+            --danger: #ef4444;
+            --radius: 8px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        header img {
+            width: 70px;
+            height: 70px;
+            object-fit: contain;
+            margin-bottom: 8px;
+            border-radius: 50%;
+            background: var(--bg-panel);
+            padding: 5px;
+            border: 1px solid var(--border-color);
+        }
+
+        header h1 {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+
+        header h2 {
+            font-size: 1.4rem;
+            color: var(--text-main);
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+        }
+
+        header .author {
+            font-size: 0.85rem;
+            color: var(--accent);
+            font-weight: 500;
+        }
+
+        .main-container {
+            display: grid;
+            grid-template-columns: 420px 1fr;
+            gap: 24px;
+            width: 100%;
+            max-width: 1400px;
+            flex: 1;
+        }
+
+        @media (max-width: 1024px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background-color: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            height: fit-content;
+        }
+
+        .category-group {
+            margin-bottom: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            background: rgba(15, 23, 42, 0.4);
+            overflow: hidden;
+        }
+
+        .category-header {
+            padding: 12px 15px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-main);
+            background: rgba(30, 41, 59, 0.8);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+            transition: background 0.2s;
+        }
+
+        .category-header:hover {
+            background: rgba(59, 130, 246, 0.15);
+        }
+
+        .category-header::after {
+            content: '▼';
+            font-size: 0.75rem;
+            transition: transform 0.2s;
+            color: var(--text-muted);
+        }
+
+        .category-group.active .category-header::after {
+            transform: rotate(180deg);
+        }
+
+        .category-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-in-out;
+            padding: 0 12px;
+        }
+
+        .category-group.active .category-content {
+            max-height: 1200px;
+            overflow-y: auto;
+            padding: 12px;
+        }
+
+        .item-row {
+            display: grid;
+            grid-template-columns: 1fr 90px;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 8px;
+            background: rgba(15, 23, 42, 0.6);
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+
+        .item-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .item-name {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #cbd5e1;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 6px 8px;
+            color: var(--text-main);
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+            text-align: center;
+        }
+
+        input[type="number"]:focus {
+            border-color: var(--accent);
+        }
+
+        .btn-container {
+            margin-top: 20px;
+        }
+
+        .btn-danger {
+            width: 100%;
+            background-color: transparent;
+            border: 1px solid var(--danger);
+            color: var(--danger);
+            border-radius: var(--radius);
+            padding: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        .btn-danger:hover {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:active {
+            transform: scale(0.98);
+        }
+
+        .results-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .result-box {
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 16px;
+        }
+
+        .result-box h3 {
+            font-size: 0.95rem;
+            color: var(--accent);
+            margin-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 6px;
+        }
+
+        .grid-results {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 10px;
+        }
+
+        .result-card {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .result-card .item-title {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+
+        .result-card .item-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--success);
+        }
+
+        .result-card .item-value.gold {
+            color: var(--warning);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <img src="logo.png" alt="Company Logo" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'80\' height=\'80\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%233b82f6\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><rect x=\'2\' y=\'7\' width=\'20\' height=\'14\' rx=\'2\' ry=\'2\'></rect><path d=\'M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16\'></path></svg>'">
+        <h1>Familia Es Todo</h1>
+        <h2>Calculator Universal Crafting Arme & Muniție</h2>
+        <div class="author">by Little Mario</div>
+    </header>
+
+    <div class="main-container">
+        <!-- Panou Stânga: Input-uri -->
+        <div class="panel">
+            <div style="font-size: 1rem; font-weight: 600; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
+                Selecție Rețete (Live)
+            </div>
+
+            <!-- Categorie 1: Arme -->
+            <div class="category-group" id="cat-weapons">
+                <div class="category-header" onclick="toggleCategory('cat-weapons')">🔫 Arme</div>
+                <div class="category-content" id="weaponsForm"></div>
+            </div>
+
+            <!-- Categorie 2: Componente Piese Armă -->
+            <div class="category-group" id="cat-parts">
+                <div class="category-header" onclick="toggleCategory('cat-parts')">⚙️ Componente Piese Armă</div>
+                <div class="category-content" id="partsForm"></div>
+            </div>
+
+            <!-- Categorie 3: Muniție -->
+            <div class="category-group" id="cat-ammo">
+                <div class="category-header" onclick="toggleCategory('cat-ammo')">📦 Muniție (Gloanțe)</div>
+                <div class="category-content" id="ammoForm"></div>
+            </div>
+
+            <div class="btn-container">
+                <button type="button" class="btn-danger" onclick="resetCalculator()">Resetează Totul</button>
+            </div>
+        </div>
+
+        <!-- Panou Dreapta: Rezultate Agregate -->
+        <div class="panel results-section">
+            <div class="result-box">
+                <h3>1. Componente & Piese de Armă Necesare</h3>
+                <div class="grid-results" id="componentsResultsGrid">
+                    <div class="result-card"><div class="item-title">Componente Piese Armă</div><div class="item-value" id="res_piese_arme">0</div></div>
+                    <div class="result-card"><div class="item-title">Teavă Pistol</div><div class="item-value" id="res_teava_pistol">0</div></div>
+                    <div class="result-card"><div class="item-title">Corp Pistol</div><div class="item-value" id="res_corp_pistol">0</div></div>
+                    <div class="result-card"><div class="item-title">Teavă SMG</div><div class="item-value" id="res_teava_smg">0</div></div>
+                    <div class="result-card"><div class="item-title">Corp SMG</div><div class="item-value" id="res_corp_smg">0</div></div>
+                    <div class="result-card"><div class="item-title">Corp de Rifle</div><div class="item-value" id="res_corp_rifle">0</div></div>
+                    <div class="result-card"><div class="item-title">Teavă de Rifle</div><div class="item-value" id="res_teava_rifle">0</div></div>
+                    <div class="result-card"><div class="item-title">Butstock</div><div class="item-value" id="res_butstock">0</div></div>
+                    <div class="result-card"><div class="item-title">Blueprint</div><div class="item-value" id="res_blueprint">0</div></div>
+                </div>
+            </div>
+
+            <div class="result-box">
+                <h3>2. Total Materiale Brute Necesare (Arme + Piese + Muniții)</h3>
+                <div class="grid-results" id="rawMaterialsResultsGrid">
+                    <div class="result-card"><div class="item-title">Arc</div><div class="item-value" id="raw_arc">0</div></div>
+                    <div class="result-card"><div class="item-title">Oțel</div><div class="item-value" id="raw_otel">0</div></div>
+                    <div class="result-card"><div class="item-title">Plumb</div><div class="item-value" id="raw_plumb">0</div></div>
+                    <div class="result-card"><div class="item-title">Aluminiu</div><div class="item-value" id="raw_aluminiu">0</div></div>
+                    <div class="result-card"><div class="item-title">Praf de Pusca</div><div class="item-value" id="raw_praf">0</div></div>
+                    <div class="result-card"><div class="item-title">Sulf</div><div class="item-value" id="raw_sulf">0</div></div>
+                    <div class="result-card"><div class="item-title">Cărbune</div><div class="item-value" id="raw_carbune">0</div></div>
+                    <div class="result-card"><div class="item-title">Fier</div><div class="item-value" id="raw_fier">0</div></div>
+                    <div class="result-card"><div class="item-title">Plastic</div><div class="item-value" id="raw_plastic">0</div></div>
+                    <div class="result-card"><div class="item-title">Scrap</div><div class="item-value" id="raw_scrap">0</div></div>
+                    <div class="result-card"><div class="item-title">Cupru</div><div class="item-value" id="raw_cupru">0</div></div>
+                    <div class="result-card"><div class="item-title">Carcasa</div><div class="item-value" id="raw_carcasa">0</div></div>
+                    <div class="result-card"><div class="item-title">Aur</div><div class="item-value gold" id="raw_aur">0</div></div>
+                    <div class="result-card"><div class="item-title">Diamant</div><div class="item-value" id="raw_diamant">0</div></div>
+                    <div class="result-card"><div class="item-title">Rubin</div><div class="item-value" id="raw_rubin">0</div></div>
+                    <div class="result-card"><div class="item-title">Emerald</div><div class="item-value" id="raw_emerald">0</div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const componentPartsCost = {
+            "Teava Pistol": 1,
+            "Corp Pistol": 1,
+            "Teava SMG": 2,
+            "Corp SMG": 2,
+            "Corp de Rifle": 3,
+            "Teava de Rifle": 3,
+            "Butstock": 2
+        };
+
+        const partRawCosts = {
+            "Componente Piese Armă": { "Arc": 1, "Oțel": 1, "Plastic": 1, "Scrap": 2 }
+        };
+
+        const weapons = {
+            "Navy Pistol": { id: "navy_pistol", blueprint: 1, parts: 6, components: ["Teava de Rifle", "Corp Pistol"] },
+            "Combat MG": { id: "combat_mg", blueprint: 1, parts: 4, components: ["Teava de Rifle", "Corp de Rifle", "Butstock"] },
+            "Assault SMG": { id: "assault_smg", blueprint: 1, parts: 4, components: ["Teava SMG", "Corp de Rifle", "Butstock"] },
+            "Gadget Pistol": { id: "gadget_pistol", blueprint: 1, parts: 20, components: ["Teava de Rifle", "Corp Pistol"], gold: 10, diamonds: 2, rubies: 2, emeralds: 2 },
+            "Shotgun": { id: "shotgun", blueprint: 1, parts: 4, components: ["Teava SMG", "Corp Pistol"] },
+            "Heavy Revolver": { id: "heavy_revolver", blueprint: 1, parts: 4, components: ["Teava de Rifle", "Corp Pistol"] },
+            "MG": { id: "mg", parts: 3, components: ["Teava de Rifle", "Corp de Rifle", "Butstock"] },
+            "Assault Rifle MK2": { id: "assault_rifle_mk2", parts: 3, components: ["Teava de Rifle", "Corp de Rifle", "Butstock"] },
+            "Pistol": { id: "pistol", components: ["Corp Pistol", "Teava Pistol"] },
+            "Tec-9": { id: "tec9", parts: 1, components: ["Corp Pistol", "Teava SMG"] },
+            "Pistol Mk2": { id: "pistol_mk2", parts: 1, components: ["Corp Pistol", "Teava Pistol"] },
+            "Micro SMG": { id: "micro_smg", parts: 1, components: ["Corp SMG", "Teava SMG"] },
+            "Mini Ak": { id: "mini_ak", parts: 1, components: ["Corp de Rifle", "Teava SMG"] },
+            "Vintage Pistol": { id: "vintage_pistol", parts: 2, components: ["Corp Pistol", "Teava Pistol"] },
+            "SMG Mk2": { id: "smg_mk2", parts: 1, components: ["Corp SMG", "Teava SMG"] },
+            "Tommy Gun": { id: "tommy_gun", parts: 1, components: ["Teava de Rifle", "Corp de Rifle", "Butstock"] },
+            "DB": { id: "db", parts: 3, components: ["Corp Pistol", "Teava Pistol"], gold: 1 }
+        };
+
+        const partsList = {
+            "Componente Piese Armă": { id: "part_piese_arme" },
+            "Teava Pistol": { id: "part_teava_pistol" },
+            "Corp Pistol": { id: "part_corp_pistol" },
+            "Teava SMG": { id: "part_teava_smg" },
+            "Corp SMG": { id: "part_corp_smg" },
+            "Corp de Rifle": { id: "part_corp_rifle" },
+            "Teava de Rifle": { id: "part_teava_rifle" },
+            "Butstock": { id: "part_butstock" }
+        };
+
+        const ammoData = {
+            ".38 Magnum": { id: "ammo_38_magnum", batch: 20, casing: { "Carcasa": 20 }, fill: { "Plumb": 2, "Praf de Pusca": 2 } },
+            ".44 Marlin": { id: "ammo_44_marlin", batch: 30, casing: { "Carcasa": 30 }, fill: { "Plumb": 1, "Praf de Pusca": 2 } },
+            "7.62mm": { id: "ammo_762", batch: 30, casing: { "Carcasa": 30 }, fill: { "Plumb": 2, "Praf de Pusca": 2 } },
+            ".45 ACP": { id: "ammo_45_acp", batch: 30, casing: { "Carcasa": 30 }, fill: { "Plumb": 1, "Praf de Pusca": 1 } },
+            "9mm PBM": { id: "ammo_9mm_pbm", batch: 30, casing: { "Carcasa": 30 }, fill: { "Plumb": 1, "Praf de Pusca": 1 } },
+            "9mm ACP": { id: "ammo_9mm_acp", batch: 30, casing: { "Carcasa": 30 }, fill: { "Plumb": 1, "Praf de Pusca": 1 } },
+            ".50 DAP": { id: "ammo_50_dap", batch: 20, casing: { "Carcasa": 20 }, fill: { "Plumb": 3, "Praf de Pusca": 4, "Diamant": 1 } }
+        };
+
+        function toggleCategory(catId) {
+            const element = document.getElementById(catId);
+            element.classList.toggle('active');
+        }
+
+        function initForms() {
+            const weaponsContainer = document.getElementById('weaponsForm');
+            let wHtml = '';
+            for (let wName in weapons) {
+                let w = weapons[wName];
+                wHtml += `
+                    <div class="item-row">
+                        <span class="item-name">${wName}</span>
+                        <input type="number" id="w_${w.id}" min="0" value="0" placeholder="0" oninput="calculateAll()">
+                    </div>
+                `;
+            }
+            weaponsContainer.innerHTML = wHtml;
+
+            const partsContainer = document.getElementById('partsForm');
+            let pHtml = '';
+            for (let pName in partsList) {
+                let p = partsList[pName];
+                pHtml += `
+                    <div class="item-row">
+                        <span class="item-name">${pName}</span>
+                        <input type="number" id="p_${p.id}" min="0" value="0" placeholder="0" oninput="calculateAll()">
+                    </div>
+                `;
+            }
+            partsContainer.innerHTML = pHtml;
+
+            const ammoContainer = document.getElementById('ammoForm');
+            let aHtml = '';
+            for (let aName in ammoData) {
+                let a = ammoData[aName];
+                aHtml += `
+                    <div class="item-row">
+                        <span class="item-name">${aName}</span>
+                        <input type="number" id="a_${a.id}" min="0" value="0" placeholder="0" oninput="calculateAll()">
+                    </div>
+                `;
+            }
+            ammoContainer.innerHTML = aHtml;
+        }
+
+        function calculateAll() {
+            let totals = {
+                blueprint: 0,
+                parts: 0,
+                "Teava Pistol": 0,
+                "Corp Pistol": 0,
+                "Teava SMG": 0,
+                "Corp SMG": 0,
+                "Corp de Rifle": 0,
+                "Teava de Rifle": 0,
+                "Butstock": 0,
+                gold: 0,
+                diamonds: 0,
+                rubies: 0,
+                emeralds: 0
+            };
+
+            for (let wName in weapons) {
+                let w = weapons[wName];
+                let qty = parseInt(document.getElementById(`w_${w.id}`).value) || 0;
+                if (qty > 0) {
+                    totals.blueprint += (w.blueprint || 0) * qty;
+                    totals.parts += (w.parts || 0) * qty;
+                    totals.gold += (w.gold || 0) * qty;
+                    totals.diamonds += (w.diamonds || 0) * qty;
+                    totals.rubies += (w.rubies || 0) * qty;
+                    totals.emeralds += (w.emeralds || 0) * qty;
+
+                    if (w.components) {
+                        w.components.forEach(comp => {
+                            totals[comp] = (totals[comp] || 0) + qty;
+                            if (componentPartsCost[comp] !== undefined) {
+                                totals.parts += (componentPartsCost[comp] * qty);
+                            }
+                        });
+                    }
+                }
+            }
+
+            for (let pName in partsList) {
+                let p = partsList[pName];
+                let qty = parseInt(document.getElementById(`p_${p.id}`).value) || 0;
+                if (qty > 0) {
+                    if (pName === "Componente Piese Armă") {
+                        totals.parts += qty;
+                    } else {
+                        if (componentPartsCost[pName] !== undefined) {
+                            totals.parts += (componentPartsCost[pName] * qty);
+                        }
+                    }
+                }
+            }
+
+            let cleanRawMats = {
+                "Arc": 0, "Oțel": 0, "Plumb": 0, "Aluminiu": 0, "Praf de Pusca": 0,
+                "Sulf": 0, "Cărbune": 0, "Fier": 0, "Plastic": 0, "Scrap": 0,
+                "Cupru": 0, "Carcasa": 0, "Aur": totals.gold, "Diamant": totals.diamonds, "Rubin": totals.rubies, "Emerald": totals.emeralds
+            };
+
+            let totalPartsToCraft = totals.parts;
+            if (totalPartsToCraft > 0) {
+                let baseCost = partRawCosts["Componente Piese Armă"];
+                for (let mat in baseCost) {
+                    cleanRawMats[mat] = (cleanRawMats[mat] || 0) + (baseCost[mat] * totalPartsToCraft);
+                }
+            }
+
+            for (let aName in ammoData) {
+                let a = ammoData[aName];
+                let bulletsQty = parseInt(document.getElementById(`a_${a.id}`).value) || 0;
+                if (bulletsQty > 0) {
+                    let crafts = Math.ceil(bulletsQty / a.batch);
+
+                    for (let mat in a.casing) {
+                        cleanRawMats[mat] = (cleanRawMats[mat] || 0) + (a.casing[mat] * crafts);
+                    }
+
+                    for (let mat in a.fill) {
+                        cleanRawMats[mat] = (cleanRawMats[mat] || 0) + (a.fill[mat] * crafts);
+                    }
+                }
+            }
+
+            document.getElementById('res_piese_arme').innerText = totals.parts;
+            document.getElementById('res_teava_pistol').innerText = totals["Teava Pistol"];
+            document.getElementById('res_corp_pistol').innerText = totals["Corp Pistol"];
+            document.getElementById('res_teava_smg').innerText = totals["Teava SMG"];
+            document.getElementById('res_corp_smg').innerText = totals["Corp SMG"];
+            document.getElementById('res_corp_rifle').innerText = totals["Corp de Rifle"];
+            document.getElementById('res_teava_rifle').innerText = totals["Teava de Rifle"];
+            document.getElementById('res_butstock').innerText = totals["Butstock"];
+            document.getElementById('res_blueprint').innerText = totals.blueprint;
+
+            document.getElementById('raw_arc').innerText = cleanRawMats["Arc"] || 0;
+            document.getElementById('raw_otel').innerText = cleanRawMats["Oțel"] || 0;
+            document.getElementById('raw_plumb').innerText = cleanRawMats["Plumb"] || 0;
+            document.getElementById('raw_aluminiu').innerText = cleanRawMats["Aluminiu"] || 0;
+            document.getElementById('raw_praf').innerText = cleanRawMats["Praf de Pusca"] || 0;
+            document.getElementById('raw_sulf').innerText = cleanRawMats["Sulf"] || 0;
+            document.getElementById('raw_carbune').innerText = cleanRawMats["Cărbune"] || 0;
+            document.getElementById('raw_fier').innerText = cleanRawMats["Fier"] || 0;
+            document.getElementById('raw_plastic').innerText = cleanRawMats["Plastic"] || 0;
+            document.getElementById('raw_scrap').innerText = cleanRawMats["Scrap"] || 0;
+            document.getElementById('raw_cupru').innerText = cleanRawMats["Cupru"] || 0;
+            document.getElementById('raw_carcasa').innerText = cleanRawMats["Carcasa"] || 0;
+            document.getElementById('raw_aur').innerText = cleanRawMats["Aur"] || 0;
+            document.getElementById('raw_diamant').innerText = cleanRawMats["Diamant"] || 0;
+            document.getElementById('raw_rubin').innerText = cleanRawMats["Rubin"] || 0;
+            document.getElementById('raw_emerald').innerText = cleanRawMats["Emerald"] || 0;
+        }
+
+        function resetCalculator() {
+            for (let wName in weapons) {
+                let input = document.getElementById(`w_${weapons[wName].id}`);
+                if (input) input.value = 0;
+            }
+            for (let pName in partsList) {
+                let input = document.getElementById(`p_${partsList[pName].id}`);
+                if (input) input.value = 0;
+            }
+            for (let aName in ammoData) {
+                let input = document.getElementById(`a_${ammoData[aName].id}`);
+                if (input) input.value = 0;
+            }
+            calculateAll();
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initForms();
+            calculateAll();
+        });
+    </script>
+</body>
+</html>
