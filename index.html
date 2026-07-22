@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Familia Es Todo - Calculator Universal Arme & Muniție</title>
+    <title>Familia Es Todo - Calculator Universal Arme & Muniție & Plicuri</title>
     <style>
         :root {
             --bg-main: #0f172a;
@@ -170,7 +170,7 @@
             color: #cbd5e1;
         }
 
-        input[type="number"] {
+        input[type="number"], select {
             width: 100%;
             background-color: var(--bg-input);
             border: 1px solid var(--border-color);
@@ -183,12 +183,15 @@
             text-align: center;
         }
 
-        input[type="number"]:focus {
+        input[type="number"]:focus, select:focus {
             border-color: var(--accent);
         }
 
         .btn-container {
             margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
         .btn-danger {
@@ -209,10 +212,6 @@
             color: white;
         }
 
-        .btn-danger:active {
-            transform: scale(0.98);
-        }
-
         .results-section {
             display: flex;
             flex-direction: column;
@@ -224,14 +223,11 @@
             border: 1px solid var(--border-color);
             border-radius: var(--radius);
             padding: 16px;
+            display: none;
         }
 
-        .result-box h3 {
-            font-size: 0.95rem;
-            color: var(--accent);
-            margin-bottom: 12px;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 6px;
+        .result-box.active {
+            display: block;
         }
 
         .grid-results {
@@ -271,7 +267,7 @@
     <header>
         <img src="logo.png" alt="Company Logo" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'80\' height=\'80\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%233b82f6\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><rect x=\'2\' y=\'7\' width=\'20\' height=\'14\' rx=\'2\' ry=\'2\'></rect><path d=\'M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16\'></path></svg>'">
         <h1>Familia Es Todo</h1>
-        <h2>Calculator Universal Crafting Arme & Muniție</h2>
+        <h2>Calculator Universal Crafting Arme, Muniție & Plicuri</h2>
         <div class="author">by Little Mario</div>
     </header>
 
@@ -300,6 +296,28 @@
                 <div class="category-content" id="ammoForm"></div>
             </div>
 
+            <!-- Categorie 4: Plicuri -->
+            <div class="category-group" id="cat-plicuri">
+                <div class="category-header" onclick="toggleCategory('cat-plicuri')">💊 Plicuri Cocaină</div>
+                <div class="category-content" id="plicuriForm">
+                    <div class="item-row" style="margin-bottom: 10px;">
+                        <span class="item-name">Tip Resursă</span>
+                        <select id="plicuriResource" onchange="calculateAll()" style="width: 100%;">
+                            <option value="frunze">Frunze</option>
+                            <option value="tavi">Tăvi</option>
+                            <option value="ape">Ape (Sticle)</option>
+                            <option value="brichete">Brichete</option>
+                            <option value="plicuri_goale">Plicuri Goale</option>
+                            <option value="plicuri_facute">Plicuri Făcute</option>
+                        </select>
+                    </div>
+                    <div class="item-row">
+                        <span class="item-name">Cantitate</span>
+                        <input type="number" id="plicuriQty" min="0" value="0" placeholder="0" oninput="calculateAll()">
+                    </div>
+                </div>
+            </div>
+
             <div class="btn-container">
                 <button type="button" class="btn-danger" onclick="resetCalculator()">Resetează Totul</button>
             </div>
@@ -307,7 +325,8 @@
 
         <!-- Panou Dreapta: Rezultate Agregate -->
         <div class="panel results-section">
-            <div class="result-box">
+            <!-- Box 1: Componente & Piese de Armă -->
+            <div class="result-box" id="box_weapons_parts">
                 <h3>1. Componente & Piese de Armă Necesare</h3>
                 <div class="grid-results" id="componentsResultsGrid">
                     <div class="result-card"><div class="item-title">Componente Piese Armă</div><div class="item-value" id="res_piese_arme">0</div></div>
@@ -322,8 +341,24 @@
                 </div>
             </div>
 
-            <div class="result-box">
-                <h3>2. Total Materiale Brute Necesare (Arme + Piese + Muniții)</h3>
+            <!-- Box 2: Necesar Materiale Plicuri Cocaină -->
+            <div class="result-box" id="box_plicuri">
+                <h3>2. Necesar Materiale Plicuri Cocaină</h3>
+                <div class="grid-results" id="plicuriResultsGrid">
+                    <div class="result-card"><div class="item-title">Frunze</div><div class="item-value" id="plic_res_frunze">0 buc</div></div>
+                    <div class="result-card"><div class="item-title">Tăvi</div><div class="item-value" id="plic_res_tavi">0 buc</div></div>
+                    <div class="result-card"><div class="item-title">Ape (Sticle)</div><div class="item-value" id="plic_res_ape">0 buc</div></div>
+                    <div class="result-card"><div class="item-title">Brichete</div><div class="item-value" id="plic_res_brichete">0 buc</div></div>
+                    <div class="result-card"><div class="item-title">Plicuri Goale</div><div class="item-value" id="plic_res_goale">0 buc</div></div>
+                    <div class="result-card"><div class="item-title">Plicuri Făcute</div><div class="item-value" id="plic_res_facute">0 buc</div></div>
+                    <div class="result-card"><div class="item-title">Total Greutate</div><div class="item-value" id="plic_res_kg">0.0 KG</div></div>
+                    <div class="result-card"><div class="item-title">Profit Estimat</div><div class="item-value gold" id="plic_res_profit">0 $</div></div>
+                </div>
+            </div>
+
+            <!-- Box 3: Total Materiale Brute (Arme + Piese + Muniții) -->
+            <div class="result-box" id="box_raw_materials">
+                <h3>3. Total Materiale Brute Necesare (Arme + Piese + Muniții)</h3>
                 <div class="grid-results" id="rawMaterialsResultsGrid">
                     <div class="result-card"><div class="item-title">Arc</div><div class="item-value" id="raw_arc">0</div></div>
                     <div class="result-card"><div class="item-title">Oțel</div><div class="item-value" id="raw_otel">0</div></div>
@@ -347,6 +382,8 @@
     </div>
 
     <script>
+        const PRICE_PER_ENVELOPE = 13600;
+
         const componentPartsCost = {
             "Teava Pistol": 1,
             "Corp Pistol": 1,
@@ -403,8 +440,17 @@
         };
 
         function toggleCategory(catId) {
-            const element = document.getElementById(catId);
-            element.classList.toggle('active');
+            const currentElement = document.getElementById(catId);
+            const isOpen = currentElement.classList.contains('active');
+
+            // Închide toate categoriile mai întâi
+            const allCategories = document.querySelectorAll('.category-group');
+            allCategories.forEach(cat => cat.classList.remove('active'));
+
+            // Dacă categoria curentă nu era deschisă, o deschidem
+            if (!isOpen) {
+                currentElement.classList.add('active');
+            }
         }
 
         function initForms() {
@@ -449,6 +495,9 @@
         }
 
         function calculateAll() {
+            let hasWeaponsOrParts = false;
+            let hasAmmo = false;
+
             let totals = {
                 blueprint: 0,
                 parts: 0,
@@ -469,6 +518,7 @@
                 let w = weapons[wName];
                 let qty = parseInt(document.getElementById(`w_${w.id}`).value) || 0;
                 if (qty > 0) {
+                    hasWeaponsOrParts = true;
                     totals.blueprint += (w.blueprint || 0) * qty;
                     totals.parts += (w.parts || 0) * qty;
                     totals.gold += (w.gold || 0) * qty;
@@ -491,6 +541,7 @@
                 let p = partsList[pName];
                 let qty = parseInt(document.getElementById(`p_${p.id}`).value) || 0;
                 if (qty > 0) {
+                    hasWeaponsOrParts = true;
                     if (pName === "Componente Piese Armă") {
                         totals.parts += qty;
                     } else {
@@ -519,6 +570,7 @@
                 let a = ammoData[aName];
                 let bulletsQty = parseInt(document.getElementById(`a_${a.id}`).value) || 0;
                 if (bulletsQty > 0) {
+                    hasAmmo = true;
                     let crafts = Math.ceil(bulletsQty / a.batch);
 
                     for (let mat in a.casing) {
@@ -531,32 +583,99 @@
                 }
             }
 
-            document.getElementById('res_piese_arme').innerText = totals.parts;
-            document.getElementById('res_teava_pistol').innerText = totals["Teava Pistol"];
-            document.getElementById('res_corp_pistol').innerText = totals["Corp Pistol"];
-            document.getElementById('res_teava_smg').innerText = totals["Teava SMG"];
-            document.getElementById('res_corp_smg').innerText = totals["Corp SMG"];
-            document.getElementById('res_corp_rifle').innerText = totals["Corp de Rifle"];
-            document.getElementById('res_teava_rifle').innerText = totals["Teava de Rifle"];
-            document.getElementById('res_butstock').innerText = totals["Butstock"];
-            document.getElementById('res_blueprint').innerText = totals.blueprint;
+            // Calcul Plicuri Cocaină
+            const resource = document.getElementById('plicuriResource').value;
+            const qtyVal = document.getElementById('plicuriQty').value;
+            let factor = 0;
+            let hasPlicuri = false;
 
-            document.getElementById('raw_arc').innerText = cleanRawMats["Arc"] || 0;
-            document.getElementById('raw_otel').innerText = cleanRawMats["Oțel"] || 0;
-            document.getElementById('raw_plumb').innerText = cleanRawMats["Plumb"] || 0;
-            document.getElementById('raw_aluminiu').innerText = cleanRawMats["Aluminiu"] || 0;
-            document.getElementById('raw_praf').innerText = cleanRawMats["Praf de Pusca"] || 0;
-            document.getElementById('raw_sulf').innerText = cleanRawMats["Sulf"] || 0;
-            document.getElementById('raw_carbune').innerText = cleanRawMats["Cărbune"] || 0;
-            document.getElementById('raw_fier').innerText = cleanRawMats["Fier"] || 0;
-            document.getElementById('raw_plastic').innerText = cleanRawMats["Plastic"] || 0;
-            document.getElementById('raw_scrap').innerText = cleanRawMats["Scrap"] || 0;
-            document.getElementById('raw_cupru').innerText = cleanRawMats["Cupru"] || 0;
-            document.getElementById('raw_carcasa').innerText = cleanRawMats["Carcasa"] || 0;
-            document.getElementById('raw_aur').innerText = cleanRawMats["Aur"] || 0;
-            document.getElementById('raw_diamant').innerText = cleanRawMats["Diamant"] || 0;
-            document.getElementById('raw_rubin').innerText = cleanRawMats["Rubin"] || 0;
-            document.getElementById('raw_emerald').innerText = cleanRawMats["Emerald"] || 0;
+            if (qtyVal !== '' && !isNaN(qtyVal) && parseFloat(qtyVal) > 0) {
+                hasPlicuri = true;
+                const qty = parseFloat(qtyVal);
+                if (resource === 'frunze') {
+                    factor = qty / 1000;
+                } else if (resource === 'tavi' || resource === 'ape' || resource === 'brichete') {
+                    factor = qty / 50;
+                } else if (resource === 'plicuri_goale' || resource === 'plicuri_facute') {
+                    factor = qty / 100;
+                }
+            }
+
+            const totalFrunze = factor * 1000;
+            const totalTavi = factor * 50;
+            const totalApe = factor * 50;
+            const totalBrichete = factor * 50;
+            const totalPlicuriGoale = factor * 100;
+            const plicuriFacute = factor * 100;
+
+            const kgFrunze = totalFrunze * 0.04;
+            const kgTavi = totalTavi * 0.3;
+            const kgApe = totalApe * 0.4;
+            const kgBrichete = totalBrichete * 0.2;
+            const kgPlicuriGoale = totalPlicuriGoale * 0.03;
+
+            const totalKg = kgFrunze + kgTavi + kgApe + kgBrichete + kgPlicuriGoale;
+            const profit = Math.round(plicuriFacute) * PRICE_PER_ENVELOPE;
+            const formatNr = (nr) => nr % 1 !== 0 ? nr.toFixed(1) : Math.round(nr);
+
+            // Afișare / Ascundere Box-uri în funcție de input
+            const boxWeaponsParts = document.getElementById('box_weapons_parts');
+            const boxPlicuri = document.getElementById('box_plicuri');
+            const boxRawMaterials = document.getElementById('box_raw_materials');
+
+            // 1. Box Arme & Piese
+            if (hasWeaponsOrParts) {
+                boxWeaponsParts.classList.add('active');
+                document.getElementById('res_piese_arme').innerText = totals.parts;
+                document.getElementById('res_teava_pistol').innerText = totals["Teava Pistol"];
+                document.getElementById('res_corp_pistol').innerText = totals["Corp Pistol"];
+                document.getElementById('res_teava_smg').innerText = totals["Teava SMG"];
+                document.getElementById('res_corp_smg').innerText = totals["Corp SMG"];
+                document.getElementById('res_corp_rifle').innerText = totals["Corp de Rifle"];
+                document.getElementById('res_teava_rifle').innerText = totals["Teava de Rifle"];
+                document.getElementById('res_butstock').innerText = totals["Butstock"];
+                document.getElementById('res_blueprint').innerText = totals.blueprint;
+            } else {
+                boxWeaponsParts.classList.remove('active');
+            }
+
+            // 2. Box Plicuri Cocaină
+            if (hasPlicuri) {
+                boxPlicuri.classList.add('active');
+                document.getElementById('plic_res_frunze').innerText = formatNr(totalFrunze) + " buc";
+                document.getElementById('plic_res_tavi').innerText = formatNr(totalTavi) + " buc";
+                document.getElementById('plic_res_ape').innerText = formatNr(totalApe) + " buc";
+                document.getElementById('plic_res_brichete').innerText = formatNr(totalBrichete) + " buc";
+                document.getElementById('plic_res_goale').innerText = formatNr(totalPlicuriGoale) + " buc";
+                document.getElementById('plic_res_facute').innerText = Math.round(plicuriFacute) + " buc";
+                document.getElementById('plic_res_kg').innerText = totalKg.toFixed(1) + " KG";
+                document.getElementById('plic_res_profit').innerText = profit.toLocaleString("ro-RO") + " $";
+            } else {
+                boxPlicuri.classList.remove('active');
+            }
+
+            // 3. Box Materiale Brute
+            if (hasWeaponsOrParts || hasAmmo) {
+                boxRawMaterials.classList.add('active');
+                document.getElementById('raw_arc').innerText = cleanRawMats["Arc"] || 0;
+                document.getElementById('raw_otel').innerText = cleanRawMats["Oțel"] || 0;
+                document.getElementById('raw_plumb').innerText = cleanRawMats["Plumb"] || 0;
+                document.getElementById('raw_aluminiu').innerText = cleanRawMats["Aluminiu"] || 0;
+                document.getElementById('raw_praf').innerText = cleanRawMats["Praf de Pusca"] || 0;
+                document.getElementById('raw_sulf').innerText = cleanRawMats["Sulf"] || 0;
+                document.getElementById('raw_carbune').innerText = cleanRawMats["Cărbune"] || 0;
+                document.getElementById('raw_fier').innerText = cleanRawMats["Fier"] || 0;
+                document.getElementById('raw_plastic').innerText = cleanRawMats["Plastic"] || 0;
+                document.getElementById('raw_scrap').innerText = cleanRawMats["Scrap"] || 0;
+                document.getElementById('raw_cupru').innerText = cleanRawMats["Cupru"] || 0;
+                document.getElementById('raw_carcasa').innerText = cleanRawMats["Carcasa"] || 0;
+                document.getElementById('raw_aur').innerText = cleanRawMats["Aur"] || 0;
+                document.getElementById('raw_diamant').innerText = cleanRawMats["Diamant"] || 0;
+                document.getElementById('raw_rubin').innerText = cleanRawMats["Rubin"] || 0;
+                document.getElementById('raw_emerald').innerText = cleanRawMats["Emerald"] || 0;
+            } else {
+                boxRawMaterials.classList.remove('active');
+            }
         }
 
         function resetCalculator() {
@@ -572,6 +691,8 @@
                 let input = document.getElementById(`a_${ammoData[aName].id}`);
                 if (input) input.value = 0;
             }
+            document.getElementById('plicuriQty').value = 0;
+            document.getElementById('plicuriResource').selectedIndex = 0;
             calculateAll();
         }
 
