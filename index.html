@@ -318,6 +318,25 @@
                 </div>
             </div>
 
+            <!-- Categorie 5: Marijuana -->
+            <div class="category-group" id="cat-weed">
+                <div class="category-header" onclick="toggleCategory('cat-weed')">🌿 Marijuana (Joints)</div>
+                <div class="category-content" id="weedForm">
+                    <div class="item-row" style="margin-bottom: 10px;">
+                        <span class="item-name">Tip Resursă</span>
+                        <select id="weedResource" onchange="calculateAll()" style="width: 100%;">
+                            <option value="frunze">Frunze</option>
+                            <option value="foite">Foițe</option>
+                            <option value="jointuri">Joint-uri</option>
+                        </select>
+                    </div>
+                    <div class="item-row">
+                        <span class="item-name">Cantitate</span>
+                        <input type="number" id="weedQty" min="0" value="0" placeholder="0" oninput="calculateAll()">
+                    </div>
+                </div>
+            </div>
+
             <div class="btn-container">
                 <button type="button" class="btn-danger" onclick="resetCalculator()">Resetează Totul</button>
             </div>
@@ -327,7 +346,7 @@
         <div class="panel results-section">
             <!-- Box 1: Componente & Piese de Armă -->
             <div class="result-box" id="box_weapons_parts">
-                <h3>1. Componente & Piese de Armă Necesare</h3>
+                <h3>Componente & Piese de Armă Necesare</h3>
                 <div class="grid-results" id="componentsResultsGrid">
                     <div class="result-card"><div class="item-title">Componente Piese Armă</div><div class="item-value" id="res_piese_arme">0</div></div>
                     <div class="result-card"><div class="item-title">Teavă Pistol</div><div class="item-value" id="res_teava_pistol">0</div></div>
@@ -343,7 +362,7 @@
 
             <!-- Box 2: Necesar Materiale Plicuri Cocaină -->
             <div class="result-box" id="box_plicuri">
-                <h3>2. Necesar Materiale Plicuri Cocaină</h3>
+                <h3>Necesar Materiale Plicuri Cocaină</h3>
                 <div class="grid-results" id="plicuriResultsGrid">
                     <div class="result-card"><div class="item-title">Frunze</div><div class="item-value" id="plic_res_frunze">0 buc</div></div>
                     <div class="result-card"><div class="item-title">Tăvi</div><div class="item-value" id="plic_res_tavi">0 buc</div></div>
@@ -356,9 +375,20 @@
                 </div>
             </div>
 
-            <!-- Box 3: Total Materiale Brute (Arme + Piese + Muniții) -->
+            <!-- Box 3: Necesar Materiale Marijuana -->
+            <div class="result-box" id="box_weed">
+                <h3>Necesar Materiale Marijuana</h3>
+                <div class="grid-results" id="weedResultsGrid">
+                    <div class="result-card"><div class="item-title">Frunze</div><div class="item-value" id="weed_res_frunze">0 buc</div></div>
+                    <div class="result-card"><div class="item-title">Foițe</div><div class="item-value" id="weed_res_foite">0 buc</div></div>
+                    <div class="result-card"><div class="item-title">Joint-uri</div><div class="item-value" id="weed_res_jointuri">0 buc</div></div>
+                    <div class="result-card"><div class="item-title">Total Greutate</div><div class="item-value" id="weed_res_kg">0.0 KG</div></div>
+                </div>
+            </div>
+
+            <!-- Box 4: Total Materiale Brute (Arme + Piese + Muniții) -->
             <div class="result-box" id="box_raw_materials">
-                <h3>3. Total Materiale Brute Necesare (Arme + Piese + Muniții)</h3>
+                <h3>Total Materiale Brute Necesare (Arme + Piese + Muniții)</h3>
                 <div class="grid-results" id="rawMaterialsResultsGrid">
                     <div class="result-card"><div class="item-title">Arc</div><div class="item-value" id="raw_arc">0</div></div>
                     <div class="result-card"><div class="item-title">Oțel</div><div class="item-value" id="raw_otel">0</div></div>
@@ -443,11 +473,9 @@
             const currentElement = document.getElementById(catId);
             const isOpen = currentElement.classList.contains('active');
 
-            // Închide toate categoriile mai întâi
             const allCategories = document.querySelectorAll('.category-group');
             allCategories.forEach(cat => cat.classList.remove('active'));
 
-            // Dacă categoria curentă nu era deschisă, o deschidem
             if (!isOpen) {
                 currentElement.classList.add('active');
             }
@@ -618,9 +646,33 @@
             const profit = Math.round(plicuriFacute) * PRICE_PER_ENVELOPE;
             const formatNr = (nr) => nr % 1 !== 0 ? nr.toFixed(1) : Math.round(nr);
 
+            // Calcul Marijuana (Joint-uri: 1 joint = 20 frunze + 1 foita)
+            const weedResource = document.getElementById('weedResource').value;
+            const weedQtyVal = document.getElementById('weedQty').value;
+            let weedFactor = 0;
+            let hasWeed = false;
+
+            if (weedQtyVal !== '' && !isNaN(weedQtyVal) && parseFloat(weedQtyVal) > 0) {
+                hasWeed = true;
+                const wQty = parseFloat(weedQtyVal);
+                if (weedResource === 'frunze') {
+                    weedFactor = wQty / 20; // 20 frunze = 1 joint
+                } else if (weedResource === 'foite') {
+                    weedFactor = wQty / 1;  // 1 foita = 1 joint
+                } else if (weedResource === 'jointuri') {
+                    weedFactor = wQty;      // cantitate directa de jointuri
+                }
+            }
+
+            const weedTotalFrunze = weedFactor * 20;
+            const weedTotalFoite = weedFactor * 1;
+            const weedTotalJoints = weedFactor * 1;
+            const weedTotalKg = (weedTotalFrunze * 0.04) + (weedTotalFoite * 0.01);
+
             // Afișare / Ascundere Box-uri în funcție de input
             const boxWeaponsParts = document.getElementById('box_weapons_parts');
             const boxPlicuri = document.getElementById('box_plicuri');
+            const boxWeed = document.getElementById('box_weed');
             const boxRawMaterials = document.getElementById('box_raw_materials');
 
             // 1. Box Arme & Piese
@@ -654,7 +706,18 @@
                 boxPlicuri.classList.remove('active');
             }
 
-            // 3. Box Materiale Brute
+            // 3. Box Marijuana
+            if (hasWeed) {
+                boxWeed.classList.add('active');
+                document.getElementById('weed_res_frunze').innerText = formatNr(weedTotalFrunze) + " buc";
+                document.getElementById('weed_res_foite').innerText = formatNr(weedTotalFoite) + " buc";
+                document.getElementById('weed_res_jointuri').innerText = Math.round(weedTotalJoints) + " buc";
+                document.getElementById('weed_res_kg').innerText = weedTotalKg.toFixed(1) + " KG";
+            } else {
+                boxWeed.classList.remove('active');
+            }
+
+            // 4. Box Materiale Brute
             if (hasWeaponsOrParts || hasAmmo) {
                 boxRawMaterials.classList.add('active');
                 document.getElementById('raw_arc').innerText = cleanRawMats["Arc"] || 0;
@@ -693,6 +756,8 @@
             }
             document.getElementById('plicuriQty').value = 0;
             document.getElementById('plicuriResource').selectedIndex = 0;
+            document.getElementById('weedQty').value = 0;
+            document.getElementById('weedResource').selectedIndex = 0;
             calculateAll();
         }
 
