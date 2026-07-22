@@ -260,6 +260,10 @@
         .result-card .item-value.gold {
             color: var(--warning);
         }
+        
+        .result-card .item-value.danger {
+            color: var(--danger);
+        }
     </style>
 </head>
 <body>
@@ -348,7 +352,9 @@
             <div class="result-box" id="box_weapons_parts">
                 <h3>Componente & Piese de Armă Necesare</h3>
                 <div class="grid-results" id="componentsResultsGrid">
-                    <div class="result-card"><div class="item-title">Componente Piese Armă</div><div class="item-value" id="res_piese_arme">0</div></div>
+                    <div class="result-card"><div class="item-title">Total Piese Armă</div><div class="item-value" id="res_piese_arme">0</div></div>
+                    <div class="result-card"><div class="item-title">Piese folosite pentru corpuri</div><div class="item-value danger" id="res_minus_piese">0</div></div>
+                    <div class="result-card"><div class="item-title">Piese necesare la banca de lucru</div><div class="item-value" id="res_ramas_piese">0</div></div>
                     <div class="result-card"><div class="item-title">Teavă Pistol</div><div class="item-value" id="res_teava_pistol">0</div></div>
                     <div class="result-card"><div class="item-title">Corp Pistol</div><div class="item-value" id="res_corp_pistol">0</div></div>
                     <div class="result-card"><div class="item-title">Teavă SMG</div><div class="item-value" id="res_teava_smg">0</div></div>
@@ -357,6 +363,7 @@
                     <div class="result-card"><div class="item-title">Teavă de Rifle</div><div class="item-value" id="res_teava_rifle">0</div></div>
                     <div class="result-card"><div class="item-title">Butstock</div><div class="item-value" id="res_butstock">0</div></div>
                     <div class="result-card"><div class="item-title">Blueprint</div><div class="item-value" id="res_blueprint">0</div></div>
+                    <div class="result-card"><div class="item-title">Lingou Aur</div><div class="item-value gold" id="res_lingou_aur">0</div></div>
                 </div>
             </div>
 
@@ -402,10 +409,7 @@
                     <div class="result-card"><div class="item-title">Scrap</div><div class="item-value" id="raw_scrap">0</div></div>
                     <div class="result-card"><div class="item-title">Cupru</div><div class="item-value" id="raw_cupru">0</div></div>
                     <div class="result-card"><div class="item-title">Carcasa</div><div class="item-value" id="raw_carcasa">0</div></div>
-                    <div class="result-card"><div class="item-title">Aur</div><div class="item-value gold" id="raw_aur">0</div></div>
-                    <div class="result-card"><div class="item-title">Diamant</div><div class="item-value" id="raw_diamant">0</div></div>
-                    <div class="result-card"><div class="item-title">Rubin</div><div class="item-value" id="raw_rubin">0</div></div>
-                    <div class="result-card"><div class="item-title">Emerald</div><div class="item-value" id="raw_emerald">0</div></div>
+                    <div class="result-card"><div class="item-title">Aur / Lingou Aur</div><div class="item-value gold" id="raw_aur">0</div></div>
                 </div>
             </div>
         </div>
@@ -414,6 +418,7 @@
     <script>
         const PRICE_PER_ENVELOPE = 13600;
 
+        // Câte piese de armă scade fiecare componentă din totalul armei (conform noului tău tabel exact)
         const componentPartsCost = {
             "Teava Pistol": 1,
             "Corp Pistol": 1,
@@ -428,24 +433,19 @@
             "Componente Piese Armă": { "Arc": 1, "Oțel": 1, "Plastic": 1, "Scrap": 2 }
         };
 
+        // Rețete exacte după imaginea transmisă anterior
         const weapons = {
-            "Navy Pistol": { id: "navy_pistol", blueprint: 1, parts: 6, components: ["Teava de Rifle", "Corp Pistol"] },
-            "Combat MG": { id: "combat_mg", blueprint: 1, parts: 4, components: ["Teava de Rifle", "Corp de Rifle", "Butstock"] },
-            "Assault SMG": { id: "assault_smg", blueprint: 1, parts: 4, components: ["Teava SMG", "Corp de Rifle", "Butstock"] },
-            "Gadget Pistol": { id: "gadget_pistol", blueprint: 1, parts: 20, components: ["Teava de Rifle", "Corp Pistol"], gold: 10, diamonds: 2, rubies: 2, emeralds: 2 },
-            "Shotgun": { id: "shotgun", blueprint: 1, parts: 4, components: ["Teava SMG", "Corp Pistol"] },
-            "Heavy Revolver": { id: "heavy_revolver", blueprint: 1, parts: 4, components: ["Teava de Rifle", "Corp Pistol"] },
-            "MG": { id: "mg", parts: 3, components: ["Teava de Rifle", "Corp de Rifle", "Butstock"] },
-            "Assault Rifle MK2": { id: "assault_rifle_mk2", parts: 3, components: ["Teava de Rifle", "Corp de Rifle", "Butstock"] },
-            "Pistol": { id: "pistol", components: ["Corp Pistol", "Teava Pistol"] },
-            "Tec-9": { id: "tec9", parts: 1, components: ["Corp Pistol", "Teava SMG"] },
-            "Pistol Mk2": { id: "pistol_mk2", parts: 1, components: ["Corp Pistol", "Teava Pistol"] },
-            "Micro SMG": { id: "micro_smg", parts: 1, components: ["Corp SMG", "Teava SMG"] },
-            "Mini Ak": { id: "mini_ak", parts: 1, components: ["Corp de Rifle", "Teava SMG"] },
-            "Vintage Pistol": { id: "vintage_pistol", parts: 2, components: ["Corp Pistol", "Teava Pistol"] },
-            "SMG Mk2": { id: "smg_mk2", parts: 1, components: ["Corp SMG", "Teava SMG"] },
-            "Tommy Gun": { id: "tommy_gun", parts: 1, components: ["Teava de Rifle", "Corp de Rifle", "Butstock"] },
-            "DB": { id: "db", parts: 3, components: ["Corp Pistol", "Teava Pistol"], gold: 1 }
+            "Combat Pistol": { id: "combat_pistol", parts: 3, components: ["Teava Pistol", "Corp Pistol"] },
+            "Machine Pistol": { id: "machine_pistol", parts: 4, components: ["Corp Pistol", "Teava SMG"] },
+            "Micro SMG": { id: "micro_smg", parts: 5, components: ["Teava SMG", "Corp SMG"] },
+            "SMG MK2": { id: "smg_mk2", parts: 5, components: ["Teava SMG", "Corp SMG"] },
+            "DB": { id: "db", parts: 5, components: ["Teava Pistol", "Corp Pistol"], lingou_aur: 1 },
+            "AK": { id: "ak", parts: 11, components: ["Teava de Rifle", "Corp de Rifle", "Butstock"] },
+            "MG": { id: "mg_skill5", parts: 11, components: ["Teava de Rifle", "Corp de Rifle", "Butstock"] },
+            "Heavy": { id: "heavy", parts: 8, blueprint: 1, components: ["Corp Pistol", "Teava de Rifle"] },
+            "Combat MG": { id: "combat_mg", parts: 12, blueprint: 1, components: ["Teava de Rifle", "Corp de Rifle", "Butstock"] },
+            "Famas": { id: "famas", parts: 11, blueprint: 1, components: ["Teava SMG", "Corp de Rifle", "Butstock"] },
+            "Navy": { id: "navy", parts: 10, blueprint: 1, components: ["Corp Pistol", "Teava de Rifle"] }
         };
 
         const partsList = {
@@ -466,7 +466,7 @@
             ".45 ACP": { id: "ammo_45_acp", batch: 30, casing: { "Carcasa": 30 }, fill: { "Plumb": 1, "Praf de Pusca": 1 } },
             "9mm PBM": { id: "ammo_9mm_pbm", batch: 30, casing: { "Carcasa": 30 }, fill: { "Plumb": 1, "Praf de Pusca": 1 } },
             "9mm ACP": { id: "ammo_9mm_acp", batch: 30, casing: { "Carcasa": 30 }, fill: { "Plumb": 1, "Praf de Pusca": 1 } },
-            ".50 DAP": { id: "ammo_50_dap", batch: 20, casing: { "Carcasa": 20 }, fill: { "Plumb": 3, "Praf de Pusca": 4, "Diamant": 1 } }
+            "7.65 mm": { id: "ammo_765", batch: 30, casing: { "Carcasa": 30 }, fill: { "Plumb": 1, "Praf de Pusca": 1 } }
         };
 
         function toggleCategory(catId) {
@@ -526,67 +526,72 @@
             let hasWeaponsOrParts = false;
             let hasAmmo = false;
 
+            let grossParts = 0;
+            let minusParts = 0;
+
             let totals = {
                 blueprint: 0,
-                parts: 0,
+                lingou_aur: 0,
                 "Teava Pistol": 0,
                 "Corp Pistol": 0,
                 "Teava SMG": 0,
                 "Corp SMG": 0,
                 "Corp de Rifle": 0,
                 "Teava de Rifle": 0,
-                "Butstock": 0,
-                gold: 0,
-                diamonds: 0,
-                rubies: 0,
-                emeralds: 0
+                "Butstock": 0
             };
 
+            // 1. Calculăm din armele selectate
             for (let wName in weapons) {
                 let w = weapons[wName];
                 let qty = parseInt(document.getElementById(`w_${w.id}`).value) || 0;
                 if (qty > 0) {
                     hasWeaponsOrParts = true;
+                    grossParts += (w.parts || 0) * qty;
                     totals.blueprint += (w.blueprint || 0) * qty;
-                    totals.parts += (w.parts || 0) * qty;
-                    totals.gold += (w.gold || 0) * qty;
-                    totals.diamonds += (w.diamonds || 0) * qty;
-                    totals.rubies += (w.rubies || 0) * qty;
-                    totals.emeralds += (w.emeralds || 0) * qty;
+                    totals.lingou_aur += (w.lingou_aur || 0) * qty;
 
                     if (w.components) {
                         w.components.forEach(comp => {
                             totals[comp] = (totals[comp] || 0) + qty;
-                            if (componentPartsCost[comp] !== undefined) {
-                                totals.parts += (componentPartsCost[comp] * qty);
-                            }
                         });
                     }
                 }
             }
 
+            // 2. Componente introduse manual
             for (let pName in partsList) {
                 let p = partsList[pName];
                 let qty = parseInt(document.getElementById(`p_${p.id}`).value) || 0;
                 if (qty > 0) {
                     hasWeaponsOrParts = true;
                     if (pName === "Componente Piese Armă") {
-                        totals.parts += qty;
+                        grossParts += qty;
                     } else {
-                        if (componentPartsCost[pName] !== undefined) {
-                            totals.parts += (componentPartsCost[pName] * qty);
-                        }
+                        totals[pName] = (totals[pName] || 0) + qty;
                     }
                 }
             }
 
+            // 3. Calculăm minusul total pe baza noului tabel de costuri piese per componentă
+            for (let comp in componentPartsCost) {
+                if (totals[comp] > 0) {
+                    minusParts += (totals[comp] * componentPartsCost[comp]);
+                }
+            }
+
+            // 4. Totalul rămase
+            let remainingParts = grossParts - minusParts;
+            if (remainingParts < 0) remainingParts = 0;
+
+            let totalPartsToCraft = grossParts; 
+
             let cleanRawMats = {
                 "Arc": 0, "Oțel": 0, "Plumb": 0, "Aluminiu": 0, "Praf de Pusca": 0,
                 "Sulf": 0, "Cărbune": 0, "Fier": 0, "Plastic": 0, "Scrap": 0,
-                "Cupru": 0, "Carcasa": 0, "Aur": totals.gold, "Diamant": totals.diamonds, "Rubin": totals.rubies, "Emerald": totals.emeralds
+                "Cupru": 0, "Carcasa": 0, "Aur": totals.lingou_aur
             };
 
-            let totalPartsToCraft = totals.parts;
             if (totalPartsToCraft > 0) {
                 let baseCost = partRawCosts["Componente Piese Armă"];
                 for (let mat in baseCost) {
@@ -611,7 +616,7 @@
                 }
             }
 
-            // Calcul Plicuri Cocaină
+            // --- Plicuri Cocaină ---
             const resource = document.getElementById('plicuriResource').value;
             const qtyVal = document.getElementById('plicuriQty').value;
             let factor = 0;
@@ -620,13 +625,9 @@
             if (qtyVal !== '' && !isNaN(qtyVal) && parseFloat(qtyVal) > 0) {
                 hasPlicuri = true;
                 const qty = parseFloat(qtyVal);
-                if (resource === 'frunze') {
-                    factor = qty / 1000;
-                } else if (resource === 'tavi' || resource === 'ape' || resource === 'brichete') {
-                    factor = qty / 50;
-                } else if (resource === 'plicuri_goale' || resource === 'plicuri_facute') {
-                    factor = qty / 100;
-                }
+                if (resource === 'frunze') factor = qty / 1000;
+                else if (resource === 'tavi' || resource === 'ape' || resource === 'brichete') factor = qty / 50;
+                else if (resource === 'plicuri_goale' || resource === 'plicuri_facute') factor = qty / 100;
             }
 
             const totalFrunze = factor * 1000;
@@ -636,17 +637,11 @@
             const totalPlicuriGoale = factor * 100;
             const plicuriFacute = factor * 100;
 
-            const kgFrunze = totalFrunze * 0.04;
-            const kgTavi = totalTavi * 0.3;
-            const kgApe = totalApe * 0.4;
-            const kgBrichete = totalBrichete * 0.2;
-            const kgPlicuriGoale = totalPlicuriGoale * 0.03;
-
-            const totalKg = kgFrunze + kgTavi + kgApe + kgBrichete + kgPlicuriGoale;
+            const totalKg = (totalFrunze * 0.04) + (totalTavi * 0.3) + (totalApe * 0.4) + (totalBrichete * 0.2) + (totalPlicuriGoale * 0.03);
             const profit = Math.round(plicuriFacute) * PRICE_PER_ENVELOPE;
             const formatNr = (nr) => nr % 1 !== 0 ? nr.toFixed(1) : Math.round(nr);
 
-            // Calcul Marijuana (Joint-uri: 1 joint = 20 frunze + 1 foita)
+            // --- Marijuana ---
             const weedResource = document.getElementById('weedResource').value;
             const weedQtyVal = document.getElementById('weedQty').value;
             let weedFactor = 0;
@@ -655,13 +650,9 @@
             if (weedQtyVal !== '' && !isNaN(weedQtyVal) && parseFloat(weedQtyVal) > 0) {
                 hasWeed = true;
                 const wQty = parseFloat(weedQtyVal);
-                if (weedResource === 'frunze') {
-                    weedFactor = wQty / 20; // 20 frunze = 1 joint
-                } else if (weedResource === 'foite') {
-                    weedFactor = wQty / 1;  // 1 foita = 1 joint
-                } else if (weedResource === 'jointuri') {
-                    weedFactor = wQty;      // cantitate directa de jointuri
-                }
+                if (weedResource === 'frunze') weedFactor = wQty / 20;
+                else if (weedResource === 'foite') weedFactor = wQty / 1;
+                else if (weedResource === 'jointuri') weedFactor = wQty;
             }
 
             const weedTotalFrunze = weedFactor * 20;
@@ -669,16 +660,18 @@
             const weedTotalJoints = weedFactor * 1;
             const weedTotalKg = (weedTotalFrunze * 0.04) + (weedTotalFoite * 0.01);
 
-            // Afișare / Ascundere Box-uri în funcție de input
+            // --- Afișare UI ---
             const boxWeaponsParts = document.getElementById('box_weapons_parts');
             const boxPlicuri = document.getElementById('box_plicuri');
             const boxWeed = document.getElementById('box_weed');
             const boxRawMaterials = document.getElementById('box_raw_materials');
 
-            // 1. Box Arme & Piese
-            if (hasWeaponsOrParts) {
+            if (hasWeaponsOrParts || grossParts > 0) {
                 boxWeaponsParts.classList.add('active');
-                document.getElementById('res_piese_arme').innerText = totals.parts;
+                document.getElementById('res_piese_arme').innerText = grossParts;
+                document.getElementById('res_minus_piese').innerText = "-" + minusParts;
+                document.getElementById('res_ramas_piese').innerText = remainingParts;
+                
                 document.getElementById('res_teava_pistol').innerText = totals["Teava Pistol"];
                 document.getElementById('res_corp_pistol').innerText = totals["Corp Pistol"];
                 document.getElementById('res_teava_smg').innerText = totals["Teava SMG"];
@@ -687,11 +680,11 @@
                 document.getElementById('res_teava_rifle').innerText = totals["Teava de Rifle"];
                 document.getElementById('res_butstock').innerText = totals["Butstock"];
                 document.getElementById('res_blueprint').innerText = totals.blueprint;
+                document.getElementById('res_lingou_aur').innerText = totals.lingou_aur;
             } else {
                 boxWeaponsParts.classList.remove('active');
             }
 
-            // 2. Box Plicuri Cocaină
             if (hasPlicuri) {
                 boxPlicuri.classList.add('active');
                 document.getElementById('plic_res_frunze').innerText = formatNr(totalFrunze) + " buc";
@@ -699,72 +692,60 @@
                 document.getElementById('plic_res_ape').innerText = formatNr(totalApe) + " buc";
                 document.getElementById('plic_res_brichete').innerText = formatNr(totalBrichete) + " buc";
                 document.getElementById('plic_res_goale').innerText = formatNr(totalPlicuriGoale) + " buc";
-                document.getElementById('plic_res_facute').innerText = Math.round(plicuriFacute) + " buc";
+                document.getElementById('plic_res_facute').innerText = formatNr(plicuriFacute) + " buc";
                 document.getElementById('plic_res_kg').innerText = totalKg.toFixed(1) + " KG";
-                document.getElementById('plic_res_profit').innerText = profit.toLocaleString("ro-RO") + " $";
+                document.getElementById('plic_res_profit').innerText = profit.toLocaleString() + " $";
             } else {
                 boxPlicuri.classList.remove('active');
             }
 
-            // 3. Box Marijuana
             if (hasWeed) {
                 boxWeed.classList.add('active');
                 document.getElementById('weed_res_frunze').innerText = formatNr(weedTotalFrunze) + " buc";
                 document.getElementById('weed_res_foite').innerText = formatNr(weedTotalFoite) + " buc";
-                document.getElementById('weed_res_jointuri').innerText = Math.round(weedTotalJoints) + " buc";
+                document.getElementById('weed_res_jointuri').innerText = formatNr(weedTotalJoints) + " buc";
                 document.getElementById('weed_res_kg').innerText = weedTotalKg.toFixed(1) + " KG";
             } else {
                 boxWeed.classList.remove('active');
             }
 
-            // 4. Box Materiale Brute
-            if (hasWeaponsOrParts || hasAmmo) {
+            if (hasWeaponsOrParts || hasAmmo || grossParts > 0) {
                 boxRawMaterials.classList.add('active');
-                document.getElementById('raw_arc').innerText = cleanRawMats["Arc"] || 0;
-                document.getElementById('raw_otel').innerText = cleanRawMats["Oțel"] || 0;
-                document.getElementById('raw_plumb').innerText = cleanRawMats["Plumb"] || 0;
-                document.getElementById('raw_aluminiu').innerText = cleanRawMats["Aluminiu"] || 0;
-                document.getElementById('raw_praf').innerText = cleanRawMats["Praf de Pusca"] || 0;
-                document.getElementById('raw_sulf').innerText = cleanRawMats["Sulf"] || 0;
-                document.getElementById('raw_carbune').innerText = cleanRawMats["Cărbune"] || 0;
-                document.getElementById('raw_fier').innerText = cleanRawMats["Fier"] || 0;
-                document.getElementById('raw_plastic').innerText = cleanRawMats["Plastic"] || 0;
-                document.getElementById('raw_scrap').innerText = cleanRawMats["Scrap"] || 0;
-                document.getElementById('raw_cupru').innerText = cleanRawMats["Cupru"] || 0;
-                document.getElementById('raw_carcasa').innerText = cleanRawMats["Carcasa"] || 0;
-                document.getElementById('raw_aur').innerText = cleanRawMats["Aur"] || 0;
-                document.getElementById('raw_diamant').innerText = cleanRawMats["Diamant"] || 0;
-                document.getElementById('raw_rubin').innerText = cleanRawMats["Rubin"] || 0;
-                document.getElementById('raw_emerald').innerText = cleanRawMats["Emerald"] || 0;
+                document.getElementById('raw_arc').innerText = cleanRawMats["Arc"];
+                document.getElementById('raw_otel').innerText = cleanRawMats["Oțel"];
+                document.getElementById('raw_plumb').innerText = cleanRawMats["Plumb"];
+                document.getElementById('raw_aluminiu').innerText = cleanRawMats["Aluminiu"];
+                document.getElementById('raw_praf').innerText = cleanRawMats["Praf de Pusca"];
+                document.getElementById('raw_sulf').innerText = cleanRawMats["Sulf"];
+                document.getElementById('raw_carbune').innerText = cleanRawMats["Cărbune"];
+                document.getElementById('raw_fier').innerText = cleanRawMats["Fier"];
+                document.getElementById('raw_plastic').innerText = cleanRawMats["Plastic"];
+                document.getElementById('raw_scrap').innerText = cleanRawMats["Scrap"];
+                document.getElementById('raw_cupru').innerText = cleanRawMats["Cupru"];
+                document.getElementById('raw_carcasa').innerText = cleanRawMats["Carcasa"];
+                document.getElementById('raw_aur').innerText = cleanRawMats["Aur"];
             } else {
                 boxRawMaterials.classList.remove('active');
             }
         }
 
         function resetCalculator() {
-            for (let wName in weapons) {
-                let input = document.getElementById(`w_${weapons[wName].id}`);
-                if (input) input.value = 0;
-            }
-            for (let pName in partsList) {
-                let input = document.getElementById(`p_${partsList[pName].id}`);
-                if (input) input.value = 0;
-            }
-            for (let aName in ammoData) {
-                let input = document.getElementById(`a_${ammoData[aName].id}`);
-                if (input) input.value = 0;
-            }
-            document.getElementById('plicuriQty').value = 0;
-            document.getElementById('plicuriResource').selectedIndex = 0;
-            document.getElementById('weedQty').value = 0;
-            document.getElementById('weedResource').selectedIndex = 0;
+            const inputs = document.querySelectorAll('input[type="number"]');
+            inputs.forEach(input => input.value = 0);
+            
+            const selects = document.querySelectorAll('select');
+            selects.forEach(select => select.selectedIndex = 0);
+
             calculateAll();
+
+            const allCategories = document.querySelectorAll('.category-group');
+            allCategories.forEach(cat => cat.classList.remove('active'));
         }
 
-        window.addEventListener('DOMContentLoaded', () => {
+        window.onload = function() {
             initForms();
             calculateAll();
-        });
+        };
     </script>
 </body>
 </html>
